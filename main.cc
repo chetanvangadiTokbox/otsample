@@ -90,6 +90,17 @@ static void on_subscriber_reconnected(otc_subscriber * subscriber, void *user_da
   std::cout << __FUNCTION__ << " callback function" << std::endl;
 }
 
+static void on_subscriber_audio_level_updated(otc_subscriber *subscriber, void *user_data, float value) {
+  //std::cout << __FUNCTION__ << " callback function " << value << std::endl;
+}
+
+static void on_subscriber_video_stats(otc_subscriber *subscriber, void *user_data, otc_subscriber_video_stats stats) {
+  //std::cout << __FUNCTION__ << " callback function " << stats.packets_received << std::endl;
+}
+
+static void on_subscriber_audio_stats(otc_subscriber *subscriber, void *user_data, otc_subscriber_video_stats stats) {
+  //std::cout << __FUNCTION__ << " callback function " << stats.packets_received << std::endl;
+}
 
 /**
  * Session Callbacks
@@ -119,6 +130,9 @@ static void on_session_stream_received(otc_session *session,
   otc_subscriber_callbacks subscriber_callbacks = {0};
   subscriber_callbacks.on_render_frame = on_subscriber_render_frame;
   subscriber_callbacks.on_reconnected = on_subscriber_reconnected;
+  subscriber_callbacks.on_audio_level_updated = on_subscriber_audio_level_updated;
+  subscriber_callbacks.on_video_stats = on_subscriber_video_stats;
+ // subscriber_callbacks.on_audio_stats = on_subscriber_audio_stats;
 
   string streamId(otc_stream_get_id(stream));
   // Create an empty placeholder for the renderer
@@ -205,6 +219,9 @@ static void on_publisher_error(otc_publisher *publisher,
 static void on_otc_log_message(const char* message) {
   std::cout <<  __FUNCTION__ << ":" << message << std::endl;
 }
+
+extern otc_status otc_session_connect_to_host(otc_session *session, const char *hostname,
+                                              const char *server_path, int port, otc_bool ssl, const char *token);
 
 static void init_ot() {
   if (otc_init(nullptr) != OTC_SUCCESS) {
@@ -342,7 +359,11 @@ int main(int, char**)
           otc_session_disconnect(session);
         } else {
           cout << "Connecting Session" << endl;
-          otc_session_connect(session, TOKEN);
+          otc_session_settings *settings = otc_session_settings_new();
+        
+          //otc_session_connect(session, TOKEN);
+          const char *url = "https://anvil-tbrel.opentok.com";
+          otc_session_connect_to_host(session, url, "", 443, 0 , TOKEN);
           create_publisher();
         }
       }
